@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Electricity Predictor</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            margin: 0;
+            padding: 30px 15px;
+            color: #20332b;
+        }
+
+        .card {
+            max-width: 420px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #16794c;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            border: 1px solid #cbd5d0;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 12px;
+            background: #16794c;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .message {
+            background: #fff2d6;
+            padding: 10px;
+            border-radius: 7px;
+        }
+
+        a {
+            color: #16794c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Welcome back</h1>
+        <p>Log in to view your electricity information.</p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="email">Email address</label>
+            <input id="email" type="email" name="email" required
+                   placeholder="you@example.com">
+
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" required
+                   placeholder="Enter your password">
+
+            <button type="submit">Log In</button>
+        </form>
+
+        <p style="text-align: center;">
+            New user? <a href="/register">Create an account</a>
+        </p>
+    </div>
+</body>
+</html>

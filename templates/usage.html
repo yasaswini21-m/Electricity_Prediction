@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Enter Electricity Usage</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            color: #20332b;
+        }
+
+        header {
+            background: #16794c;
+            color: white;
+            padding: 17px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            background: #105e3a;
+            padding: 9px 14px;
+            border-radius: 7px;
+        }
+
+        main {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            margin-bottom: 22px;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-top: 7px;
+            border: 1px solid #cbd5d0;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background: #16794c;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #105e3a;
+        }
+
+        .hint {
+            color: #627168;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message {
+            background: #e6f4ec;
+            padding: 12px;
+            border-radius: 7px;
+        }
+
+        .total {
+            color: #16794c;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 550px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 11px;
+            border-bottom: 1px solid #e1e9e4;
+        }
+
+        th {
+            background: #e6f4ec;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <strong>⚡ Electricity Predictor</strong>
+        <a href="/dashboard">Back to Dashboard</a>
+    </header>
+
+    <main>
+        <h1>Enter Appliance Usage</h1>
+        <p class="hint">
+            Hi {{ user_name }}! Add an appliance and tell us its power rating
+            and how many hours you use it per day.
+        </p>
+
+        <section class="panel">
+            <h2>Add an appliance</h2>
+
+            <p class="hint">
+                Example: A 100-watt fan used for 8 hours consumes
+                0.8 kWh per day. A unit of electricity is 1 kWh.
+            </p>
+
+            {% if message %}
+                <p class="message">{{ message }}</p>
+            {% endif %}
+
+            <form method="POST">
+                <label for="appliance_name">Appliance name</label>
+                <input
+                    id="appliance_name"
+                    name="appliance_name"
+                    placeholder="Example: Fan"
+                    required
+                >
+
+                <label for="power_watts">Power rating (watts)</label>
+                <input
+                    id="power_watts"
+                    name="power_watts"
+                    type="number"
+                    min="0.1"
+                    step="any"
+                    placeholder="Example: 100"
+                    required
+                >
+                <p class="hint">
+                    Find the watt rating on the appliance label or manual.
+                </p>
+
+                <label for="hours_per_day">Hours used per day</label>
+                <input
+                    id="hours_per_day"
+                    name="hours_per_day"
+                    type="number"
+                    min="0"
+                    max="24"
+                    step="any"
+                    placeholder="Example: 8"
+                    required
+                >
+
+                <label for="entry_date">Date this usage applies to</label>
+                <input
+                    id="entry_date"
+                    name="entry_date"
+                    type="date"
+                    required
+                >
+
+                <button type="submit">Save Usage</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Your saved appliance entries</h2>
+
+            <p class="hint">
+                Total of the daily estimates for the entries shown:
+            </p>
+
+            <p class="total">{{ total_daily_kwh }} kWh/day</p>
+
+            {% if appliances %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Appliance</th>
+                                <th>Power</th>
+                                <th>Hours/day</th>
+                                <th>Energy/day</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in appliances %}
+                                <tr>
+                                    <td>{{ item.date }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.watts }} W</td>
+                                    <td>{{ item.hours }}</td>
+                                    <td>{{ item.daily_kwh }} kWh</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="hint">
+                    You haven’t added any appliances yet. Use the form above
+                    to save your first entry.
+                </p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

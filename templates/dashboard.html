@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Dashboard | Electricity Predictor</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            color: #20332b;
+        }
+
+        header {
+            background: #16794c;
+            color: white;
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header h2 { margin: 0; }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            background: #105e3a;
+            padding: 9px 15px;
+            border-radius: 7px;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .welcome { margin-bottom: 25px; }
+        .welcome h1 { margin-bottom: 8px; }
+        .welcome p { color: #59685f; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #53645a;
+            font-size: 15px;
+        }
+
+        .value {
+            font-size: 27px;
+            font-weight: bold;
+            color: #16794c;
+        }
+
+        .note {
+            font-size: 13px;
+            color: #66756b;
+            line-height: 1.5;
+        }
+
+        .section { margin-top: 28px; }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 15px;
+        }
+
+        .action {
+            display: block;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #20332b;
+            border: 1px solid #e0e9e3;
+        }
+
+        .action strong {
+            display: block;
+            color: #16794c;
+            margin-bottom: 8px;
+        }
+
+        .action:hover {
+            border-color: #16794c;
+            transform: translateY(-2px);
+        }
+
+        .notice {
+            background: #e6f4ec;
+            border-left: 4px solid #16794c;
+            padding: 15px;
+            border-radius: 7px;
+            line-height: 1.5;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+
+        .save-rate-button {
+            padding: 9px 14px;
+            background: #16794c;
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .save-rate-button:hover { background: #105e3a; }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #66756b;
+            font-size: 13px;
+        }
+
+        /* Dashboard analytics layout */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            margin-top: 24px;
+        }
+
+        .analytics-grid .section {
+            margin-top: 0;
+            min-width: 0;
+        }
+
+        .analytics-grid .card {
+            height: 100%;
+        }
+
+        @media (max-width: 760px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <h2>⚡ Electricity Predictor</h2>
+        <a href="/logout">Log out</a>
+        <a href="{{ url_for('bill_estimator') }}">Estimate Electricity Bill</a>
+    </header>
+
+    <main>
+        <div class="welcome">
+            <h1>Hello, {{ user_name }}! 👋</h1>
+            <p>Here’s your electricity overview. Add your usage data to see your own results.</p>
+        </div>
+
+        <!-- Dashboard summary cards -->
+        <div class="cards">
+            <div class="card">
+                <h3>Daily Energy Used</h3>
+                <div class="value">
+                    {% if has_usage %}
+                        {{ daily_kwh }} kWh
+                    {% else %}
+                        — kWh
+                    {% endif %}
+                </div>
+                <p class="note">Calculated from your latest usage date.</p>
+            </div>
+
+            <div class="card">
+                <h3>30-Day Consumption Estimate</h3>
+                <div class="value">
+                    {% if has_usage %}
+                        {{ monthly_kwh }} kWh
+                    {% else %}
+                        — kWh
+                    {% endif %}
+                </div>
+                <p class="note">Assumes your latest daily usage repeats for 30 days.</p>
+            </div>
+
+            <div class="card">
+    <h3>Estimated Bill</h3>
+
+    <label for="monthlyUnits" class="note">
+        Monthly consumption (units):
+    </label>
+    <input
+        type="number"
+        id="monthlyUnits"
+        min="0"
+        step="0.01"
+        placeholder="Example: 123.60"
+        style="width: 100%; padding: 10px; margin: 10px 0;
+               border: 1px solid #ccc; border-radius: 6px;"
+    >
+
+    <label for="ratePerUnit" class="note">
+        Your average electricity rate (₹ per unit):
+    </label>
+    <input
+        type="number"
+        id="ratePerUnit"
+        min="0"
+        step="0.01"
+        placeholder="Example: 6.50"
+        value="{{ rate_per_unit if rate_per_unit is not none else '' }}"
+        style="width: 100%; padding: 10px; margin: 10px 0;
+               border: 1px solid #ccc; border-radius: 6px;"
+    >
+
+    <button type="button" id="saveRateButton" class="save-rate-button">
+        Save rate
+    </button>
+
+    <p class="note" id="rateSaveMessage" aria-live="polite"></p>
+
+    <div class="value" id="estimatedBill">₹ —</div>
+    <p class="note" id="billEstimateNote">
+        Enter monthly units and your rate to estimate the energy cost.
+    </p>
+</div>
+</div>
+        <div class="analytics-grid"></div>
+        <!-- Weekly electricity usage chart -->
+        <section class="section">
+            <div class="card">
+                <h2>Weekly Electricity Usage</h2>
+                <p class="note">Your recorded electricity consumption for the last 7 days.</p>
+
+                <div class="chart-container">
+                    <canvas id="weeklyUsageChart"></canvas>
+                </div>
+
+                <p id="weeklyChartMessage" class="note" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <!-- Upcoming 7-day forecast -->
+        <section class="section">
+            <div class="card">
+                <h2>Upcoming 7-Day Consumption Forecast</h2>
+                <p class="note">
+                    A basic Linear Regression estimate based on your saved historical usage.
+                </p>
+
+                <div class="chart-container">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+
+                <p id="forecastMessage" class="note" aria-live="polite"></p>
+
+                <p>
+                    Estimated 30-day consumption:
+                    <strong id="forecastMonthlyKwh">—</strong> kWh
+                </p>
+            </div>
+        </section>
+
+        <!-- Appliance-wise energy analysis -->
+        <section class="section">
+            <div class="card">
+                <h2>Appliance-wise Energy Analysis</h2>
+
+                <p class="note" id="applianceAnalysisDate">
+                    Loading appliance usage...
+                </p>
+
+                <div class="chart-container">
+                    <canvas id="applianceAnalysisChart"></canvas>
+                </div>
+
+                <p class="note" id="applianceAnalysisMessage" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <!-- Energy-saving suggestions -->
+        <section class="section">
+            <div class="card">
+                <h2>Energy-Saving Suggestions</h2>
+                <p class="note">Tips based on your appliance usage.</p>
+                <p id="savingSuggestions" class="note" aria-live="polite">
+                    Loading suggestions...
+                </p>
+            </div>
+        </section>
+        </div> <!-- closes analytics-grid -->
+
+        <!-- Dashboard action links -->
+        <section class="section">
+            <h2>What would you like to do?</h2>
+
+            <div class="actions">
+                <a class="action" href="/usage">
+                    <strong>＋ Enter Usage Data</strong>
+                    Add appliances, power ratings, and daily usage hours.
+                </a>
+
+                <a class="action" href="/upload">
+                    <strong>⬆ Upload a CSV File</strong>
+                    Import electricity usage from a file.
+                </a>
+
+                <a class="action" href="/history">
+                    <strong>▤ View Usage History</strong>
+                    Explore saved usage and past forecasts.
+                </a>
+
+                <a class="action" href="/download-usage-report">
+                    <strong>⇩ Download Usage Report</strong>
+                    Download your saved appliance usage as a CSV file for Excel.
+                </a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Getting started</h2>
+            <div class="notice">
+                <strong>Your dashboard is ready.</strong>
+                <br>
+                First, enter your appliances and how many hours you use them.
+                We’ll calculate your estimated electricity consumption and bill.
+                Forecasts become more useful as you add dated usage records.
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Electricity Usage Predictor · Estimates are not official electricity bills.
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // ---------------- WEEKLY USAGE CHART ----------------
+        async function loadWeeklyUsageChart() {
+            const message = document.getElementById("weeklyChartMessage");
+
+            try {
+                const response = await fetch("/weekly-usage-data");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not load weekly usage.");
+                }
+
+                if (!Array.isArray(data.labels) || !Array.isArray(data.values)) {
+                    throw new Error("Weekly route did not return labels and values.");
+                }
+
+                new Chart(document.getElementById("weeklyUsageChart"), {
+                    type: "bar",
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: "Electricity Used (kWh)",
+                            data: data.values,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Energy Used (kWh)"
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Date"
+                                }
+                            }
+                        }
+                    }
+                });
+
+                message.textContent =
+                    "Graph shows daily totals from your saved usage records.";
+            } catch (error) {
+                message.textContent = "Weekly graph failed to load: " + error.message;
+                console.error("Weekly chart error:", error);
+            }
+        }
+
+        // ---------------- FORECAST CHART ----------------
+        async function loadForecastChart() {
+            const message = document.getElementById("forecastMessage");
+
+            try {
+                const response = await fetch("/forecast-data");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not load forecast.");
+                }
+
+                if (!data.forecast_dates || !data.forecast_kwh) {
+                    message.textContent =
+                        data.message || "Add more dated usage records to create a forecast.";
+                    return;
+                }
+
+                document.getElementById("forecastMonthlyKwh").textContent =
+                    data.estimated_30_day_kwh;
+
+                new Chart(document.getElementById("forecastChart"), {
+                    type: "line",
+                    data: {
+                        labels: data.forecast_dates,
+                        datasets: [{
+                            label: "Predicted energy (kWh)",
+                            data: data.forecast_kwh,
+                            borderWidth: 2,
+                            tension: 0.25
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Energy (kWh)"
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Forecast date"
+                                }
+                            }
+                        }
+                    }
+                });
+
+                message.textContent =
+                    "Forecast values are estimates based on your saved history.";
+            } catch (error) {
+                message.textContent = "Forecast could not load: " + error.message;
+                console.error("Forecast chart error:", error);
+            }
+        }
+
+        // ---------------- APPLIANCE ANALYSIS ----------------
+        async function loadApplianceAnalysis() {
+            const dateText = document.getElementById("applianceAnalysisDate");
+            const message = document.getElementById("applianceAnalysisMessage");
+
+            try {
+                const response = await fetch("/appliance-analysis-data");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not load appliance analysis.");
+                }
+
+                if (!data.appliances || data.appliances.length === 0) {
+                    dateText.textContent = "";
+                    message.textContent =
+                        data.message || "No appliance records found for analysis.";
+                    return;
+                }
+
+                dateText.textContent =
+                    "Analysis for " + data.date +
+                    " · Total: " + data.total_kwh + " kWh/day";
+
+                new Chart(document.getElementById("applianceAnalysisChart"), {
+                    type: "pie",
+                    data: {
+                        labels: data.appliances.map(item => item.name),
+                        datasets: [{
+                            label: "Daily energy (kWh)",
+                            data: data.appliances.map(item => item.kwh)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const item = data.appliances[context.dataIndex];
+                                        return item.name + ": " + item.kwh +
+                                            " kWh (" + item.percentage + "%)";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                message.textContent =
+                    "The pie chart compares each appliance's share of energy on the selected date.";
+            } catch (error) {
+                message.textContent =
+                    "Appliance analysis failed: " + error.message;
+                console.error("Appliance analysis error:", error);
+            }
+        }
+
+        // ---------------- ENERGY-SAVING SUGGESTIONS ----------------
+        async function loadSavingSuggestions() {
+            const output = document.getElementById("savingSuggestions");
+
+            try {
+                const response = await fetch("/appliance-analysis-data");
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not load appliance data.");
+                }
+
+                if (!data.appliances || data.appliances.length === 0) {
+                    output.textContent =
+                        "Add appliance usage records to receive energy-saving tips.";
+                    return;
+                }
+
+                const highest = data.appliances.reduce((a, b) =>
+                    Number(a.kwh) > Number(b.kwh) ? a : b
+                );
+
+                const name = String(highest.name || "").toLowerCase();
+                let tip =
+                    "Try reducing the daily usage time of your highest-energy appliance.";
+
+                if (name.includes("ac") || name.includes("air conditioner")) {
+                    tip = "AC tip: Set the temperature around 24–26°C and keep doors and windows closed while it runs.";
+                } else if (name.includes("geyser") || name.includes("heater")) {
+                    tip = "Heater tip: Avoid keeping the water heater on longer than needed.";
+                } else if (name.includes("washing")) {
+                    tip = "Washing-machine tip: Run full loads when possible and use energy-saving settings.";
+                } else if (name.includes("fan")) {
+                    tip = "Fan tip: Switch off fans when rooms are unoccupied.";
+                } else if (name.includes("tv") || name.includes("television")) {
+                    tip = "TV tip: Turn the TV off completely when nobody is watching.";
+                }
+
+                output.textContent =
+                    "Your highest-use appliance is " + highest.name +
+                    " (" + highest.kwh + " kWh/day). " + tip;
+            } catch (error) {
+                output.textContent =
+                    "Could not load suggestions: " + error.message;
+                console.error("Energy-saving suggestions error:", error);
+            }
+        }
+
+        // ---------------- BILL ESTIMATE ----------------
+        function calculateEstimatedBill() {
+            const unitsInput = document.getElementById("monthlyUnits");
+            const rateInput = document.getElementById("ratePerUnit");
+            const billOutput = document.getElementById("estimatedBill");
+            const note = document.getElementById("billEstimateNote");
+
+            const unitsText = unitsInput.value.trim();
+            const rateText = rateInput.value.trim();
+
+            const units = Number(unitsText);
+            const rate = Number(rateText);
+
+            if (
+                unitsText === "" ||
+                rateText === "" ||
+                !Number.isFinite(units) ||
+                !Number.isFinite(rate) ||
+                units < 0 ||
+                rate < 0
+            ) {
+                billOutput.textContent = "₹ —";
+                note.textContent =
+                    "Enter monthly units and a valid rate to estimate your cost.";
+                return;
+            }
+
+            const estimatedAmount = units * rate;
+
+            billOutput.textContent = "₹ " + estimatedAmount.toFixed(2);
+
+            note.textContent =
+                units.toFixed(2) + " units × ₹" + rate.toFixed(2) +
+                " per unit. Approximate energy cost only; extra charges may apply.";
+        }
+
+        // Recalculate as the user types.
+        document.getElementById("monthlyUnits")
+            .addEventListener("input", calculateEstimatedBill);
+
+        document.getElementById("ratePerUnit")
+            .addEventListener("input", calculateEstimatedBill);
+        
+                // ---------------- SAVE RATE TO DATABASE ----------------
+        document.getElementById("saveRateButton")
+            .addEventListener("click", async function() {
+                const rateInput = document.getElementById("ratePerUnit");
+                const message = document.getElementById("rateSaveMessage");
+                const button = document.getElementById("saveRateButton");
+
+                const enteredRate = rateInput.value.trim();
+                const rate = Number(enteredRate);
+
+                if (
+                    enteredRate === "" ||
+                    !Number.isFinite(rate) ||
+                    rate < 0
+                ) {
+                    message.textContent = "Please enter a valid rate of zero or more.";
+                    return;
+                }
+
+                button.disabled = true;
+                button.textContent = "Saving...";
+                message.textContent = "";
+
+                try {
+                    const response = await fetch("/save-electricity-rate", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            rate_per_unit: rate
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message || "Could not save the electricity rate."
+                        );
+                    }
+
+                    message.textContent = "Rate saved to your account.";
+                    calculateEstimatedBill();
+                } catch (error) {
+                    message.textContent = error.message;
+                    console.error("Save rate error:", error);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = "Save rate";
+                }
+            });
+
+        // Run dashboard loaders and calculate using the rate, if one was saved.
+        loadWeeklyUsageChart();
+        loadForecastChart();
+        loadApplianceAnalysis();
+        loadSavingSuggestions();
+        calculateEstimatedBill();
+    </script>
+</body>
+</html>

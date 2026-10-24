@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Electricity Bill History</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 25px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #174a7e;
+        }
+
+        .bill-card {
+            background: white;
+            padding: 20px;
+            margin: 18px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        .bill-card h2 {
+            margin-top: 0;
+            color: #1769aa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 9px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        .button-link {
+            display: inline-block;
+            margin: 12px 8px 12px 0;
+            padding: 10px 16px;
+            background: #1769aa;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .empty {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>My Electricity Bill History</h1>
+    <p>Here are the bill details you have entered into the app.</p>
+
+    {% if bills %}
+        {% for bill in bills %}
+        <div class="bill-card">
+            <h2>{{ bill["billing_period"] }}</h2>
+
+            <p>
+                Units consumed:
+                <strong>{{ "%.2f"|format(bill["units"]) }} kWh</strong>
+            </p>
+
+            <table>
+                <tr>
+                    <td>Energy charges</td>
+                    <td>₹{{ "%.2f"|format(bill["energy_charges"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Fixed charges</td>
+                    <td>₹{{ "%.2f"|format(bill["fixed_charges"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Customer charges</td>
+                    <td>₹{{ "%.2f"|format(bill["customer_charges"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Electricity duty</td>
+                    <td>₹{{ "%.2f"|format(bill["electricity_duty"]) }}</td>
+                </tr>
+                <tr>
+                    <td>FPPCA / fuel adjustment</td>
+                    <td>₹{{ "%.2f"|format(bill["fppca"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Other charges / adjustments</td>
+                    <td>₹{{ "%.2f"|format(bill["other_charges"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Subsidy deducted</td>
+                    <td>−₹{{ "%.2f"|format(bill["subsidy"]) }}</td>
+                </tr>
+                <tr>
+                    <td>Arrears / previous balance</td>
+                    <td>₹{{ "%.2f"|format(bill["arrears"]) }}</td>
+                </tr>
+                <tr class="total">
+                    <td>Calculated total</td>
+                    <td>₹{{ "%.2f"|format(bill["total_amount"]) }}</td>
+                </tr>
+            </table>
+
+            <p>
+                Average amount per unit:
+                <strong>₹{{ "%.2f"|format(bill["average_rate"]) }}/kWh</strong>
+            </p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">
+            <p>You haven't saved any bill records yet.</p>
+            <p>Enter your bill details to see them here.</p>
+        </div>
+    {% endif %}
+
+    <a class="button-link" href="{{ url_for('bill_estimator') }}">
+        Enter Another Bill
+    </a>
+
+    <a href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+
+</div>
+</body>
+</html>

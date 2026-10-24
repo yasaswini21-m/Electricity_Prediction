@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Account | Electricity Predictor</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            margin: 0;
+            padding: 30px 15px;
+            color: #20332b;
+        }
+
+        .card {
+            max-width: 450px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #16794c;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            border: 1px solid #cbd5d0;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 12px;
+            background: #16794c;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .message {
+            background: #fff2d6;
+            padding: 10px;
+            border-radius: 7px;
+        }
+
+        .help {
+            font-size: 13px;
+            color: #56645d;
+        }
+
+        a {
+            color: #16794c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Create your account</h1>
+        <p>Save your electricity information and view your usage anytime.</p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="name">Your name</label>
+            <input id="name" name="name" required
+                   placeholder="Enter your name">
+
+            <label for="email">Email address</label>
+            <input id="email" type="email" name="email" required
+                   placeholder="you@example.com">
+
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password"
+                   minlength="8" required
+                   placeholder="At least 8 characters">
+            <p class="help">Choose a password with at least 8 characters.</p>
+
+            <label for="property_type">What type of property is this?</label>
+            <select id="property_type" name="property_type" required
+                    onchange="showOtherField()">
+                <option value="">Choose a property type</option>
+                <option value="Home">Home</option>
+                <option value="Shop">Shop</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <div id="other_field" style="display: none;">
+                <label for="other_property">Please specify</label>
+                <input id="other_property" name="other_property"
+                       placeholder="For example: office, school">
+            </div>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <p style="text-align: center;">
+            Already have an account? <a href="/login">Log in</a>
+        </p>
+    </div>
+
+    <script>
+        function showOtherField() {
+            const type = document.getElementById("property_type").value;
+            const otherField = document.getElementById("other_field");
+            const otherInput = document.getElementById("other_property");
+
+            otherField.style.display = type === "Other" ? "block" : "none";
+            otherInput.required = type === "Other";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Bill Estimator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 25px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #174a7e;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin: 18px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button, .button-link {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 11px 18px;
+            background: #1769aa;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        button:hover, .button-link:hover {
+            background: #105487;
+        }
+
+        .note {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .notice {
+            background: #fff8e6;
+            color: #765500;
+            padding: 12px;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        .result {
+            background: #eaf7ed;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #1769aa;
+        }
+
+        .bill-entry-card {
+            border: 2px solid #d5e8f8;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Electricity Bill Estimator</h1>
+
+    <p class="note">
+        Choose how you want to estimate your electricity bill.
+        Estimates may differ from the actual bill because of fixed charges,
+        taxes, subsidies, and tariff rules.
+    </p>
+
+    {% if error %}
+    <div class="notice">{{ error }}</div>
+    {% endif %}
+
+    <!-- OPTION 1 -->
+    <div class="card">
+        <h2>Option 1: I know my bill details</h2>
+
+        <p class="note">
+            Enter the units and amount from a previous bill.
+            The app calculates your average bill amount per unit.
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="method" value="known_bill">
+
+            <label for="units">Units used (kWh)</label>
+            <input type="number" id="units" name="units"
+                   min="0.01" step="0.01" required
+                   placeholder="Example: 150">
+
+            <label for="amount">Bill amount (₹)</label>
+            <input type="number" id="amount" name="amount"
+                   min="0" step="0.01" required
+                   placeholder="Example: 950">
+
+            <button type="submit">Calculate average rate</button>
+        </form>
+    </div>
+
+    <!-- OPTION 2 -->
+    <div class="card">
+        <h2>Option 2: Help me estimate my bill</h2>
+
+        <p class="note">
+            Select your state, electricity provider, connection type,
+            and monthly units. Verified tariff calculations will be added
+            when the correct tariff information is available.
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="method" value="guided">
+
+            <label for="state">State</label>
+            <select id="state" name="state" required>
+                <option value="">Choose a state</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Other">Other state</option>
+            </select>
+
+            <label for="discom">Electricity provider (DISCOM)</label>
+            <select id="discom" name="discom" required>
+                <option value="">Choose provider</option>
+                <option value="APEPDCL">APEPDCL</option>
+                <option value="APCPDCL">APCPDCL</option>
+                <option value="Other">Other / not sure</option>
+            </select>
+
+            <label for="connection_type">Connection type</label>
+            <select id="connection_type" name="connection_type" required>
+                <option value="">Choose connection type</option>
+                <option value="Home">Home / Residential</option>
+                <option value="Shop">Shop / Commercial</option>
+            </select>
+
+            <label for="monthly_units">Monthly electricity units (kWh)</label>
+            <input type="number" id="monthly_units" name="monthly_units"
+                   min="0.01" step="0.01" required
+                   placeholder="Example: 180">
+
+            <button type="submit">Continue</button>
+        </form>
+    </div>
+
+    <!-- NEW OPTION: ENTER BILL CHARGES -->
+    <div class="card bill-entry-card">
+        <h2>Option 3: I want to enter my bill charges</h2>
+
+        <p class="note">
+            If you have an electricity bill, you can enter its individual
+            charges—such as energy charges, fixed charges, duty, and adjustments.
+            The app will calculate a breakdown from the information you provide.
+        </p>
+
+        <a class="button-link"
+           href="{{ url_for('enter_bill_charges') }}">
+            Enter My Bill Charges
+        </a>
+    </div>
+
+    <!-- OPTION 1 RESULT -->
+    {% if result %}
+    <div class="card result">
+        <h2>Calculation result</h2>
+
+        <p>
+            Bill units entered:
+            <strong>{{ "%.2f"|format(result.units) }} kWh</strong>
+        </p>
+
+        <p>
+            Bill amount entered:
+            <strong>₹{{ "%.2f"|format(result.amount) }}</strong>
+        </p>
+
+        <p>
+            Average amount per unit:
+            <strong>₹{{ "%.2f"|format(result.rate) }}/kWh</strong>
+        </p>
+
+        <hr>
+
+        <p class="note">
+            This is the average amount per unit from the bill you entered,
+            not an official tariff slab rate.
+        </p>
+    </div>
+    {% endif %}
+
+    <p>
+        <a href="{{ url_for('bill_history') }}">View My Bill History</a>
+        &nbsp; | &nbsp;
+        <a href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+    </p>
+
+</div>
+</body>
+</html>

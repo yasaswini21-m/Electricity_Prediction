@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Bill Breakdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f4f7fb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .total {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Electricity Bill Breakdown</h2>
+    <p>Billing period: {{ billing_period }}</p>
+    <p>Units consumed: {{ units }} kWh</p>
+
+    <table>
+        <tr><td>Energy charges</td><td>₹{{ "%.2f"|format(energy) }}</td></tr>
+        <tr><td>Fixed charges</td><td>₹{{ "%.2f"|format(fixed) }}</td></tr>
+        <tr><td>Customer charges</td><td>₹{{ "%.2f"|format(customer) }}</td></tr>
+        <tr><td>Electricity duty</td><td>₹{{ "%.2f"|format(duty) }}</td></tr>
+        <tr><td>FPPCA / fuel adjustment</td><td>₹{{ "%.2f"|format(fppca) }}</td></tr>
+        <tr><td>Other charges / adjustments</td><td>₹{{ "%.2f"|format(other) }}</td></tr>
+        <tr><td>Subsidy deducted</td><td>−₹{{ "%.2f"|format(subsidy) }}</td></tr>
+        <tr><td>Arrears / previous balance</td><td>₹{{ "%.2f"|format(arrears) }}</td></tr>
+        <tr class="total"><td>Calculated total</td><td>₹{{ "%.2f"|format(total) }}</td></tr>
+    </table>
+
+    <p>Average amount per unit: ₹{{ "%.2f"|format(average_rate) }}/kWh</p>
+    <p><small>This is calculated from the charges you entered. It may differ from the electricity provider’s final payable amount.</small></p>
+
+    <a href="{{ url_for('bill_estimator') }}">Back to Bill Estimator</a>
+</body>
+</html>

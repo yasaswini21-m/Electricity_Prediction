@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enter Electricity Bill Charges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f4f7fb;
+        }
+
+        h2 {
+            color: #234;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 18px;
+            background: #1769aa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .note {
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Enter My Electricity Bill Charges</h2>
+    <p class="note">
+        Enter the amounts shown on your bill. You can leave optional charges blank.
+        Do not enter your name, address, or service number.
+    </p>
+
+    <form method="POST">
+        <label for="billing_period">Billing period or month</label>
+        <input type="text" id="billing_period" name="billing_period"
+               placeholder="e.g. April 2026" required>
+
+        <label for="units">Units consumed (kWh)</label>
+        <input type="number" id="units" name="units"
+               min="0" step="0.01" required>
+
+        <label for="energy_charges">Energy charges (₹)</label>
+        <input type="number" id="energy_charges" name="energy_charges"
+               min="0" step="0.01" required>
+
+        <label for="fixed_charges">Fixed charges (₹)</label>
+        <input type="number" id="fixed_charges" name="fixed_charges"
+               min="0" step="0.01" value="0">
+
+        <label for="customer_charges">Customer charges (₹)</label>
+        <input type="number" id="customer_charges" name="customer_charges"
+               min="0" step="0.01" value="0">
+
+        <label for="electricity_duty">Electricity duty (₹)</label>
+        <input type="number" id="electricity_duty" name="electricity_duty"
+               min="0" step="0.01" value="0">
+
+        <label for="fppca">FPPCA / fuel adjustment charges (₹)</label>
+        <input type="number" id="fppca" name="fppca"
+               step="0.01" value="0">
+
+        <label for="other_charges">Other charges or adjustments (₹)</label>
+        <input type="number" id="other_charges" name="other_charges"
+               step="0.01" value="0">
+
+        <label for="subsidy">Subsidy (₹)</label>
+        <input type="number" id="subsidy" name="subsidy"
+               min="0" step="0.01" value="0">
+
+        <label for="arrears">Arrears / previous balance (₹)</label>
+        <input type="number" id="arrears" name="arrears"
+               step="0.01" value="0">
+
+        <button type="submit">Calculate Bill Breakdown</button>
+    </form>
+</body>
+</html>

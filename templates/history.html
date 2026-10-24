@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Usage History</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            color: #20332b;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #16794c;
+            color: white;
+        }
+
+        a {
+            color: #16794c;
+        }
+
+        .empty {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f7f5;
+            border-radius: 8px;
+        }
+
+        .delete-button {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background: #962d22;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Usage History</h2>
+        <p>Hello, {{ user_name }}! Here are your saved appliance records.</p>
+
+        <h3>Daily Consumption Summary</h3>
+
+        {% if daily_totals %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total appliance energy (kWh)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in daily_totals %}
+                <tr>
+                    <td>{{ day["entry_date"] }}</td>
+                    <td>{{ "%.3f"|format(day["total_kwh"]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No daily totals available yet.</p>
+        {% endif %}
+
+        {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Appliance</th>
+                    <th>Power (W)</th>
+                    <th>Hours/day</th>
+                    <th>Energy (kWh/day)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in records %}
+                <tr>
+                    <td>{{ row["entry_date"] }}</td>
+                    <td>{{ row["appliance_name"] }}</td>
+                    <td>{{ row["power_watts"] }}</td>
+                    <td>{{ row["hours_per_day"] }}</td>
+                    <td>{{ "%.3f"|format(row["daily_kwh"]) }}</td>
+
+                    <td>
+                        <form
+                            action="{{ url_for('delete_usage', record_id=row['id']) }}"
+                            method="POST"
+                            onsubmit="return confirm('Are you sure you want to delete this record?');"
+                        >
+                            <button class="delete-button" type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% else %}
+        <div class="empty">
+            No appliance usage records have been saved yet.
+            <a href="/usage">Enter usage data</a> to add your first record.
+        </div>
+        {% endif %}
+
+        <a class="back-link" href="/dashboard">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

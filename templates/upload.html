@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Upload Usage CSV | Electricity Predictor</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            font-family: Arial, sans-serif;
+            background: #f3f7f5;
+            color: #20332b;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            margin-bottom: 20px;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #16794c;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            margin: 20px 0;
+            padding: 12px;
+            border: 1px solid #cbd8cf;
+            border-radius: 7px;
+        }
+
+        button, .link {
+            display: inline-block;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 7px;
+            background: #16794c;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .link {
+            background: #105e3a;
+            margin-left: 8px;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #e6f4ec;
+            border-radius: 7px;
+        }
+
+        code {
+            display: block;
+            padding: 12px;
+            background: #f3f7f5;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Upload Electricity Usage</h1>
+            <p>
+                Upload a CSV file containing your appliance usage.
+                The records will be saved to your account.
+            </p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" enctype="multipart/form-data">
+                <label for="csv_file"><strong>Select your CSV file:</strong></label>
+                <input
+                    type="file"
+                    id="csv_file"
+                    name="csv_file"
+                    accept=".csv"
+                    required
+                >
+
+                <button type="submit">Upload CSV</button>
+                <a class="link" href="/dashboard">Back to Dashboard</a>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Required CSV headings</h2>
+            <p>Your CSV must contain these columns:</p>
+
+            <code>Date,Appliance,Power (W),Hours per day</code>
+
+            <p>Example row:</p>
+
+            <code>2026-10-20,Fan,100,8</code>
+
+            <p>
+                Use the date format <strong>YYYY-MM-DD</strong>.
+                The extra “Estimated energy” column in your spreadsheet
+                is not required; the app calculates energy from watts
+                and hours.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
