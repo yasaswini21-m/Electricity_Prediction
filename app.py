@@ -8,9 +8,14 @@ from flask import jsonify
 import math
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key-before-deployment"
+import os
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "replace-this-with-a-long-random-secret-before-deploying"
+)
 
-DATABASE = "electricity.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, "electricity.db")
 
 
 def get_db_connection():
@@ -159,13 +164,13 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        name = request.form["name"].strip()
-        email = request.form["email"].strip().lower()
-        password = request.form["password"]
-        property_type = request.form["property_type"]
+        name = (request.form.get("name") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+        property_type = request.form.get("property_type") or ""
         other_property = request.form.get("other_property", "").strip()
 
-        if not name or not email or not password:
+        if not name or not email or not password or not property_type:
             flash("Please fill in all required fields.")
             return redirect(url_for("register"))
 
@@ -206,8 +211,12 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form["email"].strip().lower()
-        password = request.form["password"]
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+
+        if not email or not password:
+            flash("Please enter both email and password.")
+            return render_template("login.html")
 
         connection = get_db_connection()
 
@@ -329,21 +338,22 @@ def usage():
     message = None
 
     if request.method == "POST":
-        appliance_name = request.form["appliance_name"].strip()
+        appliance_name = (request.form.get("appliance_name") or "").strip()
         power_watts = request.form.get("power_watts", type=float)
         hours_per_day = request.form.get("hours_per_day", type=float)
-        entry_date = request.form["entry_date"]
+        entry_date = request.form.get("entry_date") or ""
 
         # Check that the entered values are sensible
         if (
             not appliance_name
             or power_watts is None
             or hours_per_day is None
+            or not entry_date
             or power_watts <= 0
             or hours_per_day < 0
             or hours_per_day > 24
         ):
-            message = "Please enter a name, positive power rating, and usage from 0 to 24 hours."
+            message = "Please enter a name, positive power rating, usage from 0 to 24 hours, and a valid date."
         else:
             connection = get_db_connection()
 
@@ -1003,4 +1013,4 @@ def upload():
     return render_template("upload.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
